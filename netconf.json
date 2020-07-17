@@ -1,0 +1,11 @@
+{
+    "File": {
+        "Meta": {
+            "Name": "32 bytes",
+            "Size of content": "8 bytes -- Base256"
+        },
+        "Meta Buffer": "40 bytes",
+        "Content": "Dynamic - up to 16715833527 GigaBytes"
+    },
+    "File Buffer": "1024 bytes"
+}
