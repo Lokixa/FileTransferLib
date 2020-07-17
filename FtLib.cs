@@ -111,7 +111,7 @@ namespace FtLib
         /// <summary> 
         /// Gets file and stores it into the selected folder.
         /// </summary>
-        public static void GetFile(Socket client, string folder = "./")
+        public static Meta GetFile(Socket client, string folder = "./")
         {
             if (!Directory.Exists(folder))
             {
@@ -138,7 +138,7 @@ namespace FtLib
                 Console.WriteLine("Get file caught: " + e);
             }
             fs.Close();
-            client.Close();
+            return meta;
         }
         /// <summary> 
         /// Sends file via client.
@@ -170,7 +170,6 @@ namespace FtLib
                 Console.WriteLine("Send file caught: " + e);
             }
             fs.Close();
-            client.Close();
         }
         // Resizes the array to the first element before 0.
         private static void cleanBuffer(ref byte[] buffer)
