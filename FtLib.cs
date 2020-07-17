@@ -72,7 +72,6 @@ namespace FtLib
             byte[] metaBuffer = new byte[40];
             int bytes = client.Receive(metaBuffer);
 
-            Console.WriteLine($"Got {bytes} bytes");
             if (bytes != metaBuffer.Length)
             {
                 throw new Exception("Not enough metadata");
@@ -84,9 +83,7 @@ namespace FtLib
 
             // Clean i.e. only non-zero values
             cleanBuffer(ref nameBuffer);
-            Console.WriteLine($"Got: [{string.Join(",", nameBuffer)}], of size {nameBuffer.Length}");
             cleanBuffer(ref sizeBuffer);
-            Console.WriteLine($"Got: [{string.Join(",", sizeBuffer)}], of size {sizeBuffer.Length}");
 
             // Parse
             Base255 size = new Base255(sizeBuffer);
@@ -131,7 +128,6 @@ namespace FtLib
                 {
                     int bytes = client.Receive(buffer);
                     received += bytes;
-                    Console.WriteLine("Recieved " + bytes + " bytes");
                     fs.Write(buffer, 0, bytes);
                 }
             }
@@ -139,7 +135,7 @@ namespace FtLib
             catch (Exception e)
             {
                 // Hopefully catch only disconnect
-                Console.WriteLine("Caught: " + e);
+                Console.WriteLine("Get file caught: " + e);
             }
             fs.Close();
             client.Close();
