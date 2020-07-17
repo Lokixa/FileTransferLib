@@ -152,7 +152,7 @@ namespace FtLib
             byte[] buffer = new byte[1024];
             FileStream fs = new FileStream(fileName, FileMode.Open);
 
-            string filename = fs.Name.Substring(fs.Name.LastIndexOf("\\"));
+            string filename = fs.Name.Substring(fs.Name.LastIndexOf("\\") + 1);
             Meta meta = new Meta(filename, fs.Length);
             SendMeta(client, meta);
 
