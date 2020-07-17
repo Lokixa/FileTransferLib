@@ -5,7 +5,7 @@
             "Size of content": "8 bytes -- Base256"
         },
         "Meta Buffer": "40 bytes",
-        "Content": "Dynamic - up to 16715833527 GigaBytes"
+        "Content": "Dynamic - up to the systems ram"
     },
     "File Buffer": "1024 bytes"
 }

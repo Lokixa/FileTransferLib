@@ -66,7 +66,7 @@ namespace FtLib
         /// <summary> 
         /// Gets meta file structure from client.
         /// </summary>
-        public static Meta GetMeta(Socket client)
+        private static Meta GetMeta(Socket client)
         {
             // Get 
             byte[] metaBuffer = new byte[40];
@@ -97,7 +97,7 @@ namespace FtLib
         /// <summary> 
         /// Sends meta file structure to host via client. Check netconf.json for meta structure.
         /// </summary>
-        public static void SendMeta(Socket client, Meta meta)
+        private static void SendMeta(Socket client, Meta meta)
         {
             byte[] metaBuffer = new byte[40];
 
@@ -114,13 +114,14 @@ namespace FtLib
         /// <summary> 
         /// Gets file and stores it into the selected folder.
         /// </summary>
-        public static void GetFile(Socket client, Meta meta, string folder = "./")
+        public static void GetFile(Socket client, string folder = "./")
         {
             if (!Directory.Exists(folder))
             {
                 throw new DirectoryNotFoundException();
             }
             byte[] buffer = new byte[1024];
+            Meta meta = GetMeta(client);
             FileStream fs = new FileStream(folder + meta.Name, FileMode.Create);
             BigInteger received = 0;
             try
@@ -154,6 +155,11 @@ namespace FtLib
             }
             byte[] buffer = new byte[1024];
             FileStream fs = new FileStream(fileName, FileMode.Open);
+
+            string filename = fs.Name.Substring(fs.Name.LastIndexOf("\\"));
+            Meta meta = new Meta(filename, fs.Length);
+            SendMeta(client, meta);
+
             try
             {
                 int bytes = 1;
