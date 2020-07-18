@@ -66,7 +66,7 @@ namespace FtLib
         /// <summary> 
         /// Gets meta file structure from client.
         /// </summary>
-        private static Meta GetMeta(Socket client)
+        public static Meta GetMeta(Socket client)
         {
             // Get 
             byte[] metaBuffer = new byte[40];
@@ -94,7 +94,7 @@ namespace FtLib
         /// <summary> 
         /// Sends meta file structure to host via client. Check netconf.json for meta structure.
         /// </summary>
-        private static void SendMeta(Socket client, Meta meta)
+        public static void SendMeta(Socket client, Meta meta)
         {
             byte[] metaBuffer = new byte[40];
 
@@ -117,28 +117,34 @@ namespace FtLib
             {
                 throw new DirectoryNotFoundException();
             }
-            byte[] buffer = new byte[1024];
-            Meta meta = GetMeta(client);
-            FileStream fs = new FileStream(folder + meta.Name, FileMode.Create);
-            BigInteger received = 0;
+            Meta meta = new Meta(string.Empty, 0);
+            string filename = "FtMobReceive-" + DateTime.Now.ToString("hh_mm_ss");
+            FileStream fs = new FileStream(folder + filename, FileMode.Create);
             try
             {
-                // Receive until disconnect
-                while (received != meta.Size)
-                {
-                    int bytes = client.Receive(buffer);
-                    received += bytes;
-                    fs.Write(buffer, 0, bytes);
-                }
+                meta = Get(client, fs);
             }
-            // TODO If disconnect == SocketException -> implement
             catch (Exception e)
             {
-                // Hopefully catch only disconnect
                 Console.WriteLine("Get file caught: " + e);
             }
             fs.Close();
+            File.Move(filename, meta.Name);
             return meta;
+        }
+        public static Meta Get(Socket client, Stream toWrite)
+        {
+            Meta meta = GetMeta(client);
+            byte[] buffer = new byte[1024];
+            BigInteger received = 0;
+            while (received != meta.Size)
+            {
+                int bytes = client.Receive(buffer);
+                received += bytes;
+                toWrite.Write(buffer, 0, bytes);
+            }
+            return meta;
+
         }
         /// <summary> 
         /// Sends file via client.
@@ -149,27 +155,34 @@ namespace FtLib
             {
                 throw new FileNotFoundException();
             }
-            byte[] buffer = new byte[1024];
             FileStream fs = new FileStream(fileName, FileMode.Open);
 
             string filename = fs.Name.Substring(fs.Name.LastIndexOf("\\") + 1);
             Meta meta = new Meta(filename, fs.Length);
-            SendMeta(client, meta);
 
             try
             {
-                int bytes = 1;
-                while (bytes != 0)
-                {
-                    bytes = fs.Read(buffer, 0, buffer.Length);
-                    client.Send(buffer, bytes, SocketFlags.None);
-                }
+                Send(client, meta, fs);
             }
             catch (Exception e)
             {
                 Console.WriteLine("Send file caught: " + e);
             }
             fs.Close();
+        }
+        ///<summary>
+        /// Sends meta and stream via client socket.
+        ///</summary>
+        public static void Send(Socket client, Meta meta, Stream data)
+        {
+            SendMeta(client, meta);
+            byte[] buffer = new byte[1024];
+            int bytes = 1;
+            while (bytes != 0)
+            {
+                bytes = data.Read(buffer, 0, buffer.Length);
+                client.Send(buffer, bytes, SocketFlags.None);
+            }
         }
         // Resizes the array to the first element before 0.
         private static void cleanBuffer(ref byte[] buffer)
