@@ -200,7 +200,7 @@ namespace FtLib
         }
         private static byte[] subArray(byte[] arr, int from, int to)
         {
-            byte[] sub = new byte[arr.Length - (to - from)];
+            byte[] sub = new byte[to - from];
             for (int i = 0; from < to; i++, from++)
             {
                 sub[i] = arr[from];
