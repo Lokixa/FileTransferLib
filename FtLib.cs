@@ -191,19 +191,6 @@ namespace FtLib
             }
         }
         // Resizes the array to the first element before 0.
-        private static void cleanBuffer(ref byte[] buffer)
-        {
-            int index = 0;
-            for (int i = 0; i < buffer.Length; i++)
-            {
-                if (buffer[i] == 0)
-                {
-                    index = i;
-                    break;
-                }
-            }
-            Array.Resize(ref buffer, index);
-        }
         private static byte[] subArray(byte[] arr, int from, int to)
         {
             byte[] sub = new byte[to - from];
