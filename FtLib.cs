@@ -78,17 +78,16 @@ namespace FtLib
             {
                 throw new Exception("Not enough metadata");
             }
+            Console.WriteLine($"Got meta buffer - [{string.Join(",", metaBuffer)}]");
 
             // Split 
             byte[] nameBuffer = subArray(metaBuffer, 0, 32);
             byte[] sizeBuffer = subArray(metaBuffer, 32, metaBuffer.Length);
 
-            // Clean i.e. only non-zero values
-            cleanBuffer(ref nameBuffer);
-            cleanBuffer(ref sizeBuffer);
-
             // Parse
+            Console.WriteLine("Got size buffer [{0}]", string.Join(",", sizeBuffer));
             Base255 size = new Base255(sizeBuffer);
+            Console.WriteLine("Parsed as " + size.Number);
             string name = System.Text.Encoding.UTF8.GetString(nameBuffer);
 
             return new Meta(name, size.Number);
@@ -103,10 +102,12 @@ namespace FtLib
             Encoding.UTF8.GetBytes(meta.Name).CopyTo(metaBuffer, 0);
 
             Base255 size = new Base255(meta.Size);
+            Console.WriteLine($"Compressing {meta.Size} into [{string.Join(",", size.byteArr)}]");
             for (int i = 0; i < size.byteArr.Length; i++)
             {
                 metaBuffer[32 + i] = size.byteArr[i];
             }
+            Console.WriteLine($"Sending meta buffer - [{string.Join(",", metaBuffer)}]");
 
             client.Send(metaBuffer);
         }
@@ -137,12 +138,14 @@ namespace FtLib
         public static Meta Get(Socket client, Stream toWrite)
         {
             Meta meta = GetMeta(client);
+            Console.WriteLine($"Got meta: {meta.Name} - {meta.Size}");
             byte[] buffer = new byte[FileBufferSize];
             BigInteger received = 0;
             while (received != meta.Size)
             {
                 int bytes = client.Receive(buffer);
                 received += bytes;
+                // Console.WriteLine("Received " + received + " / " + meta.Size);
                 toWrite.Write(buffer, 0, bytes);
             }
             return meta;
@@ -177,6 +180,7 @@ namespace FtLib
         ///</summary>
         public static void Send(Socket client, Meta meta, Stream data)
         {
+            Console.WriteLine($"Sending meta: {meta.Name} - {meta.Size}");
             SendMeta(client, meta);
             byte[] buffer = new byte[FileBufferSize];
             for (BigInteger count = 0; count < meta.Size;)
