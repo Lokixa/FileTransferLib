@@ -63,13 +63,15 @@ namespace FtLib
     /// </summary>
     public static class Net
     {
+        const int FileBufferSize = 1024;
+        const int MetaBufferSize = 40;
         /// <summary> 
         /// Gets meta file structure from client.
         /// </summary>
         public static Meta GetMeta(Socket client)
         {
             // Get 
-            byte[] metaBuffer = new byte[40];
+            byte[] metaBuffer = new byte[MetaBufferSize];
             int bytes = client.Receive(metaBuffer);
 
             if (bytes != metaBuffer.Length)
@@ -96,7 +98,7 @@ namespace FtLib
         /// </summary>
         public static void SendMeta(Socket client, Meta meta)
         {
-            byte[] metaBuffer = new byte[40];
+            byte[] metaBuffer = new byte[MetaBufferSize];
 
             Encoding.UTF8.GetBytes(meta.Name).CopyTo(metaBuffer, 0);
 
@@ -135,7 +137,7 @@ namespace FtLib
         public static Meta Get(Socket client, Stream toWrite)
         {
             Meta meta = GetMeta(client);
-            byte[] buffer = new byte[1024];
+            byte[] buffer = new byte[FileBufferSize];
             BigInteger received = 0;
             while (received != meta.Size)
             {
@@ -176,12 +178,12 @@ namespace FtLib
         public static void Send(Socket client, Meta meta, Stream data)
         {
             SendMeta(client, meta);
-            byte[] buffer = new byte[1024];
-            int bytes = 1;
-            while (bytes != 0)
+            byte[] buffer = new byte[FileBufferSize];
+            for (BigInteger count = 0; count < meta.Size;)
             {
-                bytes = data.Read(buffer, 0, buffer.Length);
+                int bytes = data.Read(buffer, 0, buffer.Length);
                 client.Send(buffer, bytes, SocketFlags.None);
+                count += bytes;
             }
         }
         // Resizes the array to the first element before 0.
