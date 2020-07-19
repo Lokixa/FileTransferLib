@@ -132,8 +132,14 @@ namespace FtLib
             {
                 throw new DirectoryNotFoundException();
             }
+            if (!folder.EndsWith('/'))
+            {
+                folder += '/';
+            }
+
             Meta meta = new Meta(string.Empty, 0);
             string filename = "FtMobReceive-" + DateTime.Now.ToString("hh_mm_ss");
+
             FileStream fs = new FileStream(folder + filename, FileMode.Create);
             try
             {
@@ -144,24 +150,23 @@ namespace FtLib
                 Console.WriteLine("Get file caught: " + e);
             }
             fs.Close();
-            File.Move(filename, meta.Name);
+
+            File.Move(folder + filename, folder + meta.Name);
             return meta;
         }
         public static Meta Get(Socket client, Stream toWrite)
         {
             Meta meta = GetMeta(client);
             Console.WriteLine($"Got meta: {meta.Name} - {meta.Size}");
+
             byte[] buffer = new byte[FileBufferSize];
-            BigInteger received = 0;
-            while (received != meta.Size)
+            for (BigInteger received = 0; received != meta.Size;)
             {
                 int bytes = client.Receive(buffer);
                 received += bytes;
-                // Console.WriteLine("Received " + received + " / " + meta.Size);
                 toWrite.Write(buffer, 0, bytes);
             }
             return meta;
-
         }
         /// <summary> 
         /// Sends file via client.
@@ -194,6 +199,7 @@ namespace FtLib
         {
             Console.WriteLine($"Sending meta: {meta.Name} - {meta.Size}");
             SendMeta(client, meta);
+
             byte[] buffer = new byte[FileBufferSize];
             for (BigInteger count = 0; count < meta.Size;)
             {
@@ -202,7 +208,7 @@ namespace FtLib
                 count += bytes;
             }
         }
-        // Resizes the array to the first element before 0.
+        // Returns a new sub-array.
         private static byte[] subArray(byte[] arr, int from, int to)
         {
             byte[] sub = new byte[to - from];
