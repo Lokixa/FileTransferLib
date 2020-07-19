@@ -78,8 +78,8 @@ namespace FtLib
             }
 
             // Split 
-            byte[] nameBuffer = metaBuffer[0..32];
-            byte[] sizeBuffer = metaBuffer[32..metaBuffer.Length];
+            byte[] nameBuffer = subArray(metaBuffer, 0, 32);
+            byte[] sizeBuffer = subArray(metaBuffer, 32, metaBuffer.Length);
 
             // Clean i.e. only non-zero values
             cleanBuffer(ref nameBuffer);
@@ -197,6 +197,15 @@ namespace FtLib
                 }
             }
             Array.Resize(ref buffer, index);
+        }
+        private static byte[] subArray(byte[] arr, int from, int to)
+        {
+            byte[] sub = new byte[arr.Length - (to - from)];
+            for (int i = 0; from < to; i++, from++)
+            {
+                sub[i] = arr[from];
+            }
+            return sub;
         }
     }
 }
