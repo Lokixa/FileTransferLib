@@ -84,6 +84,18 @@ namespace FtLib
             byte[] nameBuffer = subArray(metaBuffer, 0, 32);
             byte[] sizeBuffer = subArray(metaBuffer, 32, metaBuffer.Length);
 
+            // Clean nameBuffer, first 'non-blank' element.
+            int nonZeroIndex = 0;
+            for (int i = 0; i < nameBuffer.Length; i++)
+            {
+                if (nameBuffer[i] < 33)  // If its blank
+                {
+                    nonZeroIndex = i;
+                    break;
+                }
+            }
+            Array.Resize(ref nameBuffer, nonZeroIndex);
+
             // Parse
             Console.WriteLine("Got size buffer [{0}]", string.Join(",", sizeBuffer));
             Base255 size = new Base255(sizeBuffer);
