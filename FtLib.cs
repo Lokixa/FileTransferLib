@@ -89,7 +89,7 @@ namespace FtLib
             int nonZeroIndex = 0;
             for (int i = 0; i < nameBuffer.Length; i++)
             {
-                if (nameBuffer[i] < 33)  // If its blank (ASCII)
+                if (nameBuffer[i] < ' ')  // If its blank (ASCII)
                 {
                     nonZeroIndex = i;
                     break;
