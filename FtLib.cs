@@ -6,6 +6,7 @@ using System.Text;
 
 namespace FtLib
 {
+    #region DataStructures
     /// <summary> 
     /// Base 255 class.
     /// </summary>
@@ -57,6 +58,7 @@ namespace FtLib
             this.Size = size;
         }
     }
+    #endregion
     /// <summary> 
     /// A bunch of helper functions for receiving files and such. 
     /// Hardcoded values in netconf.json in the library's folder.
@@ -64,8 +66,10 @@ namespace FtLib
     public static class Net
     {
         const int FileBufferSize = 1024;
-        const int MetaBufferSize = 40;
+        const int MetaBufferSize = 64;
         const int LengthBufferSize = 8;
+        const int NameBufferSize = MetaBufferSize - LengthBufferSize;
+        #region Meta
         /// <summary> 
         /// Gets meta file structure from client.
         /// </summary>
@@ -82,14 +86,14 @@ namespace FtLib
             Console.WriteLine($"Got meta buffer - [{string.Join(",", metaBuffer)}]");
 
             // Split 
-            byte[] nameBuffer = subArray(metaBuffer, 0, metaBuffer.Length - LengthBufferSize);
-            byte[] sizeBuffer = subArray(metaBuffer, metaBuffer.Length - LengthBufferSize, metaBuffer.Length);
+            byte[] nameBuffer = subArray(metaBuffer, 0, NameBufferSize);
+            byte[] sizeBuffer = subArray(metaBuffer, NameBufferSize, metaBuffer.Length);
 
             // Clean nameBuffer, first 'non-blank' element.
             int nonZeroIndex = 0;
             for (int i = 0; i < nameBuffer.Length; i++)
             {
-                if (nameBuffer[i] < ' ')  // If its blank (ASCII)
+                if (nameBuffer[i] < 33)  // If its blank (ASCII)
                 {
                     nonZeroIndex = i;
                     break;
@@ -118,12 +122,14 @@ namespace FtLib
             Console.WriteLine($"Compressing {meta.Size} into [{string.Join(",", size.byteArr)}]");
             for (int i = 0; i < size.byteArr.Length; i++)
             {
-                metaBuffer[(metaBuffer.Length - LengthBufferSize) + i] = size.byteArr[i];
+                metaBuffer[(NameBufferSize) + i] = size.byteArr[i];
             }
             Console.WriteLine($"Sending meta buffer - [{string.Join(",", metaBuffer)}]");
 
             client.Send(metaBuffer);
         }
+        #endregion
+        #region SendAndReceive
         /// <summary> 
         /// Gets file and stores it into the selected folder.
         /// </summary>
@@ -209,6 +215,8 @@ namespace FtLib
                 count += bytes;
             }
         }
+        #endregion
+        #region HelperMethod
         // Returns a new sub-array.
         private static byte[] subArray(byte[] arr, int from, int to)
         {
@@ -219,5 +227,6 @@ namespace FtLib
             }
             return sub;
         }
+        #endregion
     }
 }
