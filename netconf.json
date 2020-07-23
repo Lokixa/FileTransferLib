@@ -1,10 +1,10 @@
 {
     "File": {
         "Meta": {
-            "Name": "32 bytes",
+            "Name": "56 bytes",
             "Size of content": "8 bytes -- Base256"
         },
-        "Meta Buffer": "40 bytes",
+        "Meta Buffer": "64 bytes",
         "Content": "Dynamic - up to the systems ram"
     },
     "File Buffer": "1024 bytes"
