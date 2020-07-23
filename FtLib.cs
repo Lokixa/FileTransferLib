@@ -116,7 +116,13 @@ namespace FtLib
         {
             byte[] metaBuffer = new byte[MetaBufferSize];
 
-            Encoding.UTF8.GetBytes(meta.Name).CopyTo(metaBuffer, 0);
+            string filename = meta.Name;
+            if (filename.Length > NameBufferSize)
+            {
+                filename = filename.Substring(0, NameBufferSize);
+            }
+
+            Encoding.UTF8.GetBytes(filename).CopyTo(metaBuffer, 0);
 
             Base255 size = new Base255(meta.Size);
             Console.WriteLine($"Compressing {meta.Size} into [{string.Join(",", size.byteArr)}]");
