@@ -65,6 +65,7 @@ namespace FtLib
     {
         const int FileBufferSize = 1024;
         const int MetaBufferSize = 40;
+        const int LengthBufferSize = 8;
         /// <summary> 
         /// Gets meta file structure from client.
         /// </summary>
@@ -81,14 +82,14 @@ namespace FtLib
             Console.WriteLine($"Got meta buffer - [{string.Join(",", metaBuffer)}]");
 
             // Split 
-            byte[] nameBuffer = subArray(metaBuffer, 0, 32);
-            byte[] sizeBuffer = subArray(metaBuffer, 32, metaBuffer.Length);
+            byte[] nameBuffer = subArray(metaBuffer, 0, metaBuffer.Length - LengthBufferSize);
+            byte[] sizeBuffer = subArray(metaBuffer, metaBuffer.Length - LengthBufferSize, metaBuffer.Length);
 
             // Clean nameBuffer, first 'non-blank' element.
             int nonZeroIndex = 0;
             for (int i = 0; i < nameBuffer.Length; i++)
             {
-                if (nameBuffer[i] < 33)  // If its blank
+                if (nameBuffer[i] < 33)  // If its blank (ASCII)
                 {
                     nonZeroIndex = i;
                     break;
@@ -117,7 +118,7 @@ namespace FtLib
             Console.WriteLine($"Compressing {meta.Size} into [{string.Join(",", size.byteArr)}]");
             for (int i = 0; i < size.byteArr.Length; i++)
             {
-                metaBuffer[32 + i] = size.byteArr[i];
+                metaBuffer[(metaBuffer.Length - LengthBufferSize) + i] = size.byteArr[i];
             }
             Console.WriteLine($"Sending meta buffer - [{string.Join(",", metaBuffer)}]");
 
