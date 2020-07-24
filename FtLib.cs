@@ -2,6 +2,7 @@ using System;
 using System.IO;
 using System.Net.Sockets;
 using System.Numerics;
+using System.Runtime.InteropServices;
 using System.Text;
 
 namespace FtLib
@@ -192,7 +193,16 @@ namespace FtLib
             }
             FileStream fs = new FileStream(fileName, FileMode.Open);
 
-            string filename = fs.Name.Substring(fs.Name.LastIndexOf("\\") + 1);
+            string filename = string.Empty;
+            var isWindows = RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
+            if (isWindows)
+            {
+                filename = fs.Name.Substring(fs.Name.LastIndexOf("\\") + 1);
+            }
+            else
+            {
+                filename = fs.Name.Substring(fs.Name.LastIndexOf("/") + 1);
+            }
             Meta meta = new Meta(filename, fs.Length);
 
             try
