@@ -186,6 +186,7 @@ namespace FtLib
                 Console.WriteLine($"Got {received} / {meta.Size} || {bytes}");
 
                 bytes = client.Receive(buffer, 0, bytes, SocketFlags.None);
+                Console.WriteLine("Not stuck here atleast.");
                 received += bytes;
                 toWrite.Write(buffer, 0, bytes);
             }
