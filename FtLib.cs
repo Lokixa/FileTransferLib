@@ -183,6 +183,7 @@ namespace FtLib
                     bytes = (int)bytesLeft;
                 else
                     bytes = FileBufferSize;
+                Console.WriteLine($"Got {received} / {meta.Size} || {bytes}");
 
                 bytes = client.Receive(buffer, 0, bytes, SocketFlags.None);
                 received += bytes;
@@ -232,10 +233,10 @@ namespace FtLib
             SendMeta(client, meta);
 
             byte[] buffer = new byte[FileBufferSize];
-            for (BigInteger count = 0; count < meta.Size;)
+            for (BigInteger count = 0; count != meta.Size;)
             {
                 int bytes = data.Read(buffer, 0, buffer.Length);
-                client.Send(buffer, bytes, SocketFlags.None);
+                bytes = client.Send(buffer, bytes, SocketFlags.None);
                 count += bytes;
             }
         }
