@@ -236,7 +236,9 @@ namespace FtLib
             for (BigInteger count = 0; count != meta.Size;)
             {
                 int bytes = data.Read(buffer, 0, buffer.Length);
+                Console.Write($"Read {bytes}");
                 bytes = client.Send(buffer, bytes, SocketFlags.None);
+                Console.WriteLine($", Sent {bytes}");
                 count += bytes;
             }
         }
