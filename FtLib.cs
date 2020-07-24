@@ -176,7 +176,15 @@ namespace FtLib
             byte[] buffer = new byte[FileBufferSize];
             for (BigInteger received = 0; received != meta.Size;)
             {
-                int bytes = client.Receive(buffer);
+                int bytes;
+
+                BigInteger bytesLeft = meta.Size - received;
+                if (bytesLeft - FileBufferSize < 0)
+                    bytes = (int)bytesLeft;
+                else
+                    bytes = FileBufferSize;
+
+                bytes = client.Receive(buffer, 0, bytes, SocketFlags.None);
                 received += bytes;
                 toWrite.Write(buffer, 0, bytes);
             }
