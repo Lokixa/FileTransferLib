@@ -162,6 +162,8 @@ namespace FtLib
             catch (Exception e)
             {
                 Console.WriteLine("Get file caught: " + e);
+                fs.Close();
+                File.Delete(folder + filename);
             }
             fs.Close();
 
