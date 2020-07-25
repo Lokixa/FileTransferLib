@@ -4,6 +4,7 @@ using System.Net.Sockets;
 using System.Numerics;
 using System.Runtime.InteropServices;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace FtLib
 {
@@ -31,6 +32,7 @@ namespace FtLib
             logger.Log($"Got meta: {meta.Name} - {meta.Size}", Logger.State.Debug);
 
             byte[] buffer = new byte[FileBufferSize];
+
             for (BigInteger received = 0; received != meta.Size;)
             {
                 int bytes;
@@ -40,10 +42,9 @@ namespace FtLib
                     bytes = (int)bytesLeft;
                 else
                     bytes = FileBufferSize;
-                logger.Log($"Got {received} / {meta.Size} || {bytes}", Logger.State.Debug);
+                logger.Log($"{meta.Name} - {received} / {meta.Size}", Logger.State.Progress);
 
                 bytes = client.Receive(buffer, 0, bytes, SocketFlags.None);
-                logger.Log("Not stuck here atleast.", Logger.State.Debug);
                 received += bytes;
                 toWrite.Write(buffer, 0, bytes);
             }
@@ -59,13 +60,14 @@ namespace FtLib
             SendMeta(client, meta);
 
             byte[] buffer = new byte[FileBufferSize];
+
+
             for (BigInteger count = 0; count != meta.Size;)
             {
                 int bytes = data.Read(buffer, 0, buffer.Length);
-                logger.Log($"Read {bytes}", Logger.State.Debug);
                 bytes = client.Send(buffer, bytes, SocketFlags.None);
-                logger.Log($", Sent {bytes}", Logger.State.Debug);
                 count += bytes;
+                logger.Log($"{meta.Name} - {count} / {meta.Size}", Logger.State.Progress);
             }
         }
 
