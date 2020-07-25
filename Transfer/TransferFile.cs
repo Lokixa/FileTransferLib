@@ -9,6 +9,8 @@ namespace FtLib
         /// <summary> 
         /// Gets file and stores it into the selected folder.
         /// </summary>
+        /// <exception cref="System.IO.DirectoryNotFoundException">Throws if the folder given isn't found.</exception>
+        /// See <see cref="Net.Get(Socket, Stream)"/> for receiving to a stream. 
         public static Meta GetFile(Socket client, string folder = "./")
         {
             if (!Directory.Exists(folder))
@@ -46,7 +48,9 @@ namespace FtLib
         }
         /// <summary> 
         /// Sends file via client.
-        /// </summary>
+        /// </summary> 
+        /// <exception cref="System.IO.FileNotFoundException">Throws if the filePath is wrong.</exception>
+        /// See <see cref="Net.Send(Socket, Meta, Stream)"/> for sending a stream. 
         public static void SendFile(Socket client, string filePath)
         {
             if (!File.Exists(filePath))

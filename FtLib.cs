@@ -14,12 +14,17 @@ namespace FtLib
     /// </summary>
     public static partial class Net
     {
+        ///<value>The size of the default file reading buffer.</value>
         const int FileBufferSize = 1024;
         const int MetaBufferSize = 64;
         const int LengthBufferSize = 8;
         const int NameBufferSize = MetaBufferSize - LengthBufferSize;
         static Logger logger = new Logger(Logger.State.Silent);
 
+        ///<summary>
+        /// Gets meta and stream via client socket.
+        ///</summary>
+        ///<exception cref="System.Net.Sockets.SocketException">Thrown if the client is disconnected</exception>
         public static Meta Get(Socket client, Stream toWrite)
         {
             Meta meta = GetMeta(client);
@@ -47,6 +52,7 @@ namespace FtLib
         ///<summary>
         /// Sends meta and stream via client socket.
         ///</summary>
+        ///<exception cref="System.Net.Sockets.SocketException">Thrown if the client is disconnected</exception>
         public static void Send(Socket client, Meta meta, Stream data)
         {
             logger.Log($"Sending meta: {meta.Name} - {meta.Size}", Logger.State.Debug);
@@ -64,6 +70,9 @@ namespace FtLib
         }
 
         #region HelperMethod
+        ///<summary>
+        /// Sets logger state.
+        ///</summary>
         public static void UseLogger(Logger.State state)
         {
             logger.CurrentState = state;
