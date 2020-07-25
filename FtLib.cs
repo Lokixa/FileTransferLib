@@ -59,6 +59,30 @@ namespace FtLib
             this.Size = size;
         }
     }
+    public class Logger
+    {
+        public enum State
+        {
+            Silent,
+            Progress,
+            Debug
+        }
+        public State CurrentState { get; set; }
+        public TextWriter WriteTo;
+        public Logger(State state)
+        {
+            CurrentState = state;
+            WriteTo = Console.Out;
+        }
+        public void Log(string message, State state)
+        {
+            if (state != CurrentState || state == State.Silent)
+            {
+                return;
+            }
+            WriteTo.Write(message);
+        }
+    }
     #endregion
     /// <summary> 
     /// A bunch of helper functions for receiving files and such. 
@@ -70,6 +94,7 @@ namespace FtLib
         const int MetaBufferSize = 64;
         const int LengthBufferSize = 8;
         const int NameBufferSize = MetaBufferSize - LengthBufferSize;
+        static Logger logger = new Logger(Logger.State.Silent);
         #region Meta
         /// <summary> 
         /// Gets meta file structure from client.
@@ -84,7 +109,7 @@ namespace FtLib
             {
                 throw new Exception("Not enough metadata");
             }
-            Console.WriteLine($"Got meta buffer - [{string.Join(",", metaBuffer)}]");
+            logger.Log($"Got meta buffer - [{string.Join(",", metaBuffer)}]", Logger.State.Debug);
 
             // Split 
             byte[] nameBuffer = subArray(metaBuffer, 0, NameBufferSize);
@@ -103,9 +128,9 @@ namespace FtLib
             Array.Resize(ref nameBuffer, nonZeroIndex);
 
             // Parse
-            Console.WriteLine("Got size buffer [{0}]", string.Join(",", sizeBuffer));
+            logger.Log($"Got size buffer [{string.Join(",", sizeBuffer)}]", Logger.State.Debug);
             Base255 size = new Base255(sizeBuffer);
-            Console.WriteLine("Parsed as " + size.Number);
+            logger.Log("Parsed as " + size.Number, Logger.State.Debug);
             string name = System.Text.Encoding.UTF8.GetString(nameBuffer);
 
             return new Meta(name, size.Number);
@@ -126,12 +151,12 @@ namespace FtLib
             Encoding.UTF8.GetBytes(filename).CopyTo(metaBuffer, 0);
 
             Base255 size = new Base255(meta.Size);
-            Console.WriteLine($"Compressing {meta.Size} into [{string.Join(",", size.byteArr)}]");
+            logger.Log($"Compressing {meta.Size} into [{string.Join(",", size.byteArr)}]", Logger.State.Debug);
             for (int i = 0; i < size.byteArr.Length; i++)
             {
                 metaBuffer[(NameBufferSize) + i] = size.byteArr[i];
             }
-            Console.WriteLine($"Sending meta buffer - [{string.Join(",", metaBuffer)}]");
+            logger.Log($"Sending meta buffer - [{string.Join(",", metaBuffer)}]", Logger.State.Debug);
 
             client.Send(metaBuffer);
         }
@@ -161,7 +186,7 @@ namespace FtLib
             }
             catch (Exception e)
             {
-                Console.WriteLine("Get file caught: " + e);
+                Console.WriteLine("Get file caught: " + e); // Maybe add logger warn state
                 fs.Close();
                 File.Delete(folder + filename);
             }
@@ -173,7 +198,7 @@ namespace FtLib
         public static Meta Get(Socket client, Stream toWrite)
         {
             Meta meta = GetMeta(client);
-            Console.WriteLine($"Got meta: {meta.Name} - {meta.Size}");
+            logger.Log($"Got meta: {meta.Name} - {meta.Size}", Logger.State.Debug);
 
             byte[] buffer = new byte[FileBufferSize];
             for (BigInteger received = 0; received != meta.Size;)
@@ -185,10 +210,10 @@ namespace FtLib
                     bytes = (int)bytesLeft;
                 else
                     bytes = FileBufferSize;
-                Console.WriteLine($"Got {received} / {meta.Size} || {bytes}");
+                logger.Log($"Got {received} / {meta.Size} || {bytes}", Logger.State.Debug);
 
                 bytes = client.Receive(buffer, 0, bytes, SocketFlags.None);
-                Console.WriteLine("Not stuck here atleast.");
+                logger.Log("Not stuck here atleast.", Logger.State.Debug);
                 received += bytes;
                 toWrite.Write(buffer, 0, bytes);
             }
@@ -232,20 +257,24 @@ namespace FtLib
         ///</summary>
         public static void Send(Socket client, Meta meta, Stream data)
         {
-            Console.WriteLine($"Sending meta: {meta.Name} - {meta.Size}");
+            logger.Log($"Sending meta: {meta.Name} - {meta.Size}", Logger.State.Debug);
             SendMeta(client, meta);
 
             byte[] buffer = new byte[FileBufferSize];
             for (BigInteger count = 0; count != meta.Size;)
             {
                 int bytes = data.Read(buffer, 0, buffer.Length);
-                Console.Write($"Read {bytes}");
+                logger.Log($"Read {bytes}", Logger.State.Debug);
                 bytes = client.Send(buffer, bytes, SocketFlags.None);
-                Console.WriteLine($", Sent {bytes}");
+                logger.Log($", Sent {bytes}", Logger.State.Debug);
                 count += bytes;
             }
         }
         #endregion
+        public static void UseLogger(Logger.State state)
+        {
+            logger.CurrentState = state;
+        }
         #region HelperMethod
         // Returns a new sub-array.
         private static byte[] subArray(byte[] arr, int from, int to)
