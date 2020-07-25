@@ -15,7 +15,10 @@ namespace FtLib
             // Get 
             byte[] metaBuffer = new byte[MetaBufferSize];
             int bytes = client.Receive(metaBuffer);
-
+            if (bytes == 0)
+            {
+                throw new SocketException((int)SocketError.NotConnected);
+            }
             if (bytes != metaBuffer.Length)
             {
                 throw new Exception("Not enough metadata");
@@ -69,7 +72,11 @@ namespace FtLib
             }
             logger.Log($"Sending meta buffer - [{string.Join(",", metaBuffer)}]", Logger.State.Debug);
 
-            client.Send(metaBuffer);
+            int bytes = client.Send(metaBuffer);
+            if (bytes == 0)
+            {
+                throw new SocketException((int)SocketError.NotConnected);
+            }
         }
         #endregion
     }
