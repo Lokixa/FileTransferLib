@@ -28,11 +28,16 @@ namespace FtLib
             {
                 meta = Get(client, fs);
             }
-            catch (Exception e)
+            catch (SocketException se)
             {
-                Console.WriteLine("Get file caught: " + e); // Maybe add logger warn state
-                fs.Close();
-                File.Delete(folder + filename);
+                var errCode = (SocketError)se.ErrorCode;
+                if (errCode == SocketError.NotConnected)
+                {
+                    fs.Close();
+                    File.Delete(folder + filename);
+                    throw se;
+                }
+                Console.WriteLine("Get file caught Socket Exception: " + se);
             }
             fs.Close();
 
@@ -68,11 +73,10 @@ namespace FtLib
             {
                 Send(client, meta, fs);
             }
-            catch (Exception e)
+            finally
             {
-                Console.WriteLine("Send file caught: " + e);
+                fs.Close();
             }
-            fs.Close();
         }
     }
 }
