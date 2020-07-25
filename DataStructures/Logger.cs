@@ -24,7 +24,7 @@ namespace FtLib
             {
                 return;
             }
-            WriteTo.Write(message);
+            WriteTo.WriteLine(message);
         }
     }
 }
