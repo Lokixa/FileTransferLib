@@ -42,7 +42,7 @@ namespace FtLib
                     bytes = (int)bytesLeft;
                 else
                     bytes = FileBufferSize;
-                logger.Log($"{meta.Name} - {received} / {meta.Size}", Logger.State.Progress);
+                logger.Log($"\r{meta.Name} - {received} / {meta.Size}", Logger.State.Progress);
 
                 bytes = client.Receive(buffer, 0, bytes, SocketFlags.None);
                 received += bytes;
@@ -67,7 +67,7 @@ namespace FtLib
                 int bytes = data.Read(buffer, 0, buffer.Length);
                 bytes = client.Send(buffer, bytes, SocketFlags.None);
                 count += bytes;
-                logger.Log($"{meta.Name} - {count} / {meta.Size}", Logger.State.Progress);
+                logger.Log($"\r{meta.Name} - {count} / {meta.Size}", Logger.State.Progress);
             }
         }
 
