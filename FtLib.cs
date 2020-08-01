@@ -29,26 +29,31 @@ namespace FtLib
         public static Meta Get(Socket client, Stream toWrite)
         {
             Meta meta = GetMeta(client);
-            logger.Log($"Got meta: {meta.Name} - {meta.Size}", Logger.State.Debug);
+            logger.Log(
+                $"Got meta: {meta.Name} - {meta.Size}",
+                Logger.State.Debug | Logger.State.Simple);
 
             byte[] buffer = new byte[FileBufferSize];
 
             for (BigInteger received = 0; received != meta.Size;)
             {
                 int bytes;
-
                 BigInteger bytesLeft = meta.Size - received;
+
                 if (bytesLeft - FileBufferSize < 0)
                     bytes = (int)bytesLeft;
                 else
                     bytes = FileBufferSize;
-                logger.Log($"\r{meta.Name} - {received} / {meta.Size}", Logger.State.Progress);
+
+                logger.Log($"\r{meta.Name} - {received} / {meta.Size}",
+                           Logger.State.Progress);
 
                 bytes = client.Receive(buffer, 0, bytes, SocketFlags.None);
                 received += bytes;
                 toWrite.Write(buffer, 0, bytes);
             }
-            logger.Log($"\r{meta.Name} - {meta.Size} / {meta.Size}", Logger.State.Progress);
+            logger.Log($"\r{meta.Name} - {meta.Size} / {meta.Size}",
+                       Logger.State.Progress);
             return meta;
         }
         ///<summary>
@@ -57,7 +62,10 @@ namespace FtLib
         ///<exception cref="System.Net.Sockets.SocketException">Thrown if the client is disconnected</exception>
         public static void Send(Socket client, Meta meta, Stream data)
         {
-            logger.Log($"Sending meta: {meta.Name} - {meta.Size}", Logger.State.Debug);
+            logger.Log(
+                $"Sending meta: {meta.Name} - {meta.Size}",
+                Logger.State.Debug | Logger.State.Simple);
+
             SendMeta(client, meta);
 
             byte[] buffer = new byte[FileBufferSize];
@@ -68,9 +76,12 @@ namespace FtLib
                 int bytes = data.Read(buffer, 0, buffer.Length);
                 bytes = client.Send(buffer, bytes, SocketFlags.None);
                 count += bytes;
-                logger.Log($"\r{meta.Name} - {count} / {meta.Size}", Logger.State.Progress);
+
+                logger.Log($"\r{meta.Name} - {count} / {meta.Size}",
+                           Logger.State.Progress);
             }
-            logger.Log($"\r{meta.Name} - {meta.Size} / {meta.Size}", Logger.State.Progress);
+            logger.Log($"\r{meta.Name} - {meta.Size} / {meta.Size}",
+                       Logger.State.Progress);
         }
 
         #region HelperMethod

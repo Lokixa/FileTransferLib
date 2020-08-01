@@ -13,7 +13,8 @@ namespace FtLib
             Silent = 0b0000,
             Progress = 0b0001,
             Debug = 0b0010,
-            All = Progress | Debug
+            Simple = 0b0100,
+            All = Simple | Progress | Debug
         }
         ///<summary>Current state of the logger</summary>
         public State CurrentState { get; set; }
