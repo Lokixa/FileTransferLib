@@ -48,6 +48,7 @@ namespace FtLib
                 received += bytes;
                 toWrite.Write(buffer, 0, bytes);
             }
+            logger.Log($"\r{meta.Name} - {meta.Size} / {meta.Size}", Logger.State.Progress);
             return meta;
         }
         ///<summary>
@@ -69,6 +70,7 @@ namespace FtLib
                 count += bytes;
                 logger.Log($"\r{meta.Name} - {count} / {meta.Size}", Logger.State.Progress);
             }
+            logger.Log($"\r{meta.Name} - {meta.Size} / {meta.Size}", Logger.State.Progress);
         }
 
         #region HelperMethod
