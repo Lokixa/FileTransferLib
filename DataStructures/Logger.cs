@@ -10,9 +10,10 @@ namespace FtLib
         ///</summary>
         public enum State
         {
-            Silent,
-            Progress,
-            Debug
+            Silent = 0b0000,
+            Progress = 0b0001,
+            Debug = 0b0010,
+            All = Progress | Debug
         }
         ///<summary>Current state of the logger</summary>
         public State CurrentState { get; set; }
@@ -30,7 +31,7 @@ namespace FtLib
         ///</summary>
         public void Log(string message, State state)
         {
-            if (state != CurrentState || state == State.Silent)
+            if ((state & CurrentState) != CurrentState || state == State.Silent)
             {
                 return;
             }
