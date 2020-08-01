@@ -10,10 +10,10 @@ namespace FtLib
         ///</summary>
         public enum State
         {
-            Silent = 0b0000,
-            Progress = 0b0001,
-            Debug = 0b0010,
-            Simple = 0b0100,
+            Silent = 0b0001,
+            Progress = 0b0010,
+            Debug = 0b0100,
+            Simple = 0b1000,
             All = Simple | Progress | Debug
         }
         ///<summary>Current state of the logger</summary>
