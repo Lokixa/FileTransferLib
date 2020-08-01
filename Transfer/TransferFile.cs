@@ -23,14 +23,15 @@ namespace FtLib
             }
 
             Meta meta = new Meta(string.Empty, 0);
-            string filename = "FtMobReceive-" + DateTime.Now.ToString("hh_mm_ss");
+            string filename = "Receive-" + DateTime.Now.ToString("hh_mm_ss");
 
+            // Create, don't overwrite
             FileStream fs = new FileStream(folder + filename, FileMode.Create);
             try
             {
                 meta = Get(client, fs);
             }
-            catch (SocketException se)
+            catch (SocketException se)  // If client disconnects.
             {
                 var errCode = (SocketError)se.ErrorCode;
                 if (errCode == SocketError.NotConnected)
@@ -43,7 +44,22 @@ namespace FtLib
             }
             fs.Close();
 
-            File.Move(folder + filename, folder + meta.Name);
+            // Use date as filename with extension.
+            if (File.Exists(folder + meta.Name))
+            {
+                string extension = string.Empty;
+                if (meta.Name.Contains('.'))
+                    extension = meta.Name.Substring(meta.Name.LastIndexOf('.'));
+
+                File.Move(folder + filename, folder + filename + extension);
+                logger.Log(
+                    "File already exists, saving as " + filename + extension,
+                    Logger.State.Debug | Logger.State.Progress);
+            }
+            else
+            {
+                File.Move(folder + filename, folder + meta.Name);
+            }
             return meta;
         }
         /// <summary> 
