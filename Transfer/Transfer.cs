@@ -1,27 +1,24 @@
-using System;
 using System.IO;
 using System.Net.Sockets;
 using System.Numerics;
-using System.Runtime.InteropServices;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace FtLib
 {
-
     /// <summary> 
     /// A bunch of helper functions for receiving files and such. 
     /// Hardcoded values in netconf.json in the library's folder.
     /// </summary>
-    public static partial class Net
+    public static partial class Transfer
     {
         ///<value>The size of the default file reading buffer.</value>
         const int FileBufferSize = 1024;
+        ///<value>The size of the default file reading buffer.</value>
         const int MetaBufferSize = 64;
+        ///<value>The size of the default file reading buffer.</value>
         const int LengthBufferSize = 8;
+        ///<value>The size of the default file reading buffer.</value>
         const int NameBufferSize = MetaBufferSize - LengthBufferSize;
-        static Logger logger = new Logger(Logger.State.Silent);
-
+        static Logger logger = new Logger(LoggerState.Silent);
         ///<summary>
         /// Gets meta and stream via client socket.
         ///</summary>
@@ -31,29 +28,21 @@ namespace FtLib
             Meta meta = GetMeta(client);
             logger.Log(
                 $"Got meta: {meta.Name} - {meta.Size}",
-                Logger.State.Debug | Logger.State.Simple);
+                LoggerState.Debug | LoggerState.Simple);
 
             byte[] buffer = new byte[FileBufferSize];
 
             for (BigInteger received = 0; received != meta.Size;)
             {
-                int bytes;
-                BigInteger bytesLeft = meta.Size - received;
-
-                if (bytesLeft - FileBufferSize < 0)
-                    bytes = (int)bytesLeft;
-                else
-                    bytes = FileBufferSize;
-
                 logger.Log($"\r{meta.Name} - {received} / {meta.Size}",
-                           Logger.State.Progress);
+                           LoggerState.Progress);
 
-                bytes = client.Receive(buffer, 0, bytes, SocketFlags.None);
+                int bytes = client.Receive(buffer, FileBufferSize, SocketFlags.None);
                 received += bytes;
                 toWrite.Write(buffer, 0, bytes);
             }
             logger.Log($"\r{meta.Name} - {meta.Size} / {meta.Size}",
-                       Logger.State.Progress);
+                       LoggerState.Progress);
             return meta;
         }
         ///<summary>
@@ -64,7 +53,7 @@ namespace FtLib
         {
             logger.Log(
                 $"Sending meta: {meta.Name} - {meta.Size}",
-                Logger.State.Debug | Logger.State.Simple);
+                LoggerState.Debug | LoggerState.Simple);
 
             SendMeta(client, meta);
 
@@ -78,21 +67,20 @@ namespace FtLib
                 count += bytes;
 
                 logger.Log($"\r{meta.Name} - {count} / {meta.Size}",
-                           Logger.State.Progress);
+                           LoggerState.Progress);
             }
             logger.Log($"\r{meta.Name} - {meta.Size} / {meta.Size}",
-                       Logger.State.Progress);
+                       LoggerState.Progress);
         }
-
-        #region HelperMethod
+        #region HelperMethods
         ///<summary>
         /// Sets logger state.
         ///</summary>
-        public static void UseLogger(Logger.State state)
+        public static void UseLogger(LoggerState state)
         {
             logger.CurrentState = state;
         }
-        // Returns a new sub-array.
+
         private static byte[] subArray(byte[] arr, int from, int to)
         {
             byte[] sub = new byte[to - from];

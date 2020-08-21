@@ -4,14 +4,14 @@ using System.Net.Sockets;
 
 namespace FtLib
 {
-    public static partial class Net
+    public static partial class Transfer
     {
         /// <summary> 
         /// Gets file and stores it into the selected folder.
         /// </summary>
         /// <exception cref="System.IO.DirectoryNotFoundException">Throws if the folder given isn't found.</exception>
-        /// See <see cref="Net.Get(Socket, Stream)"/> for receiving to a stream. 
-        public static Meta GetFile(Socket client, string folder = "./")
+        /// See <see cref="Transfer.Get(Socket, Stream)"/> for receiving to a stream. 
+        public static Meta GetFile(Socket client, string folder = "./", byte[] encryptionKey = null)
         {
             if (!Directory.Exists(folder))
             {
@@ -29,7 +29,14 @@ namespace FtLib
             FileStream fs = new FileStream(folder + filename, FileMode.Create);
             try
             {
-                meta = Get(client, fs);
+                if (encryptionKey == null)
+                {
+                    meta = Get(client, fs);
+                }
+                else
+                {
+                    meta = GetSecure(client, fs, encryptionKey);
+                }
             }
             catch (SocketException se)  // If client disconnects.
             {
@@ -54,7 +61,7 @@ namespace FtLib
                 File.Move(folder + filename, folder + filename + extension);
                 logger.Log(
                     "File already exists, saving as " + filename + extension,
-                    Logger.State.Debug | Logger.State.Progress);
+                    LoggerState.Debug | LoggerState.Progress);
             }
             else
             {
@@ -66,8 +73,8 @@ namespace FtLib
         /// Sends file via client.
         /// </summary> 
         /// <exception cref="System.IO.FileNotFoundException">Throws if the filePath is wrong.</exception>
-        /// See <see cref="Net.Send(Socket, Meta, Stream)"/> for sending a stream. 
-        public static void SendFile(Socket client, string filePath)
+        /// See <see cref="Transfer.Send(Socket, Meta, Stream)"/> for sending a stream. 
+        public static void SendFile(Socket client, string filePath, byte[] encryptionKey = null)
         {
             if (!File.Exists(filePath))
             {
@@ -91,7 +98,14 @@ namespace FtLib
 
             try
             {
-                Send(client, meta, fs);
+                if (encryptionKey == null)
+                {
+                    Send(client, meta, fs);
+                }
+                else
+                {
+                    SendSecure(client, meta, fs, encryptionKey);
+                }
             }
             finally
             {
