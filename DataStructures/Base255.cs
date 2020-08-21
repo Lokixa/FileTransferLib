@@ -9,41 +9,46 @@ namespace FtLib
     ///<remarks>
     /// This class is intended to be used as a storage for Base255-BigInteger related conversions.
     ///</remarks>
-    public class Base255
+    public static class Base255
     {
-        public BigInteger Number { get; }
-        public byte[] byteArr { get; }  //Inverted buffer
-
         ///<summary>Stores the number and stores its conversion to base 255.</summary>
-        public Base255(BigInteger number)
+        public static byte[] ToByteArr(BigInteger number, uint size = 0)
         {
-            int size = (int)Math.Ceiling(BigInteger.Log(number, 255));
-            this.byteArr = new byte[size];
-            Number = number;
-            var tempNumber = number;
+            if (number > 0 && size == 0)
+                size = (uint)Math.Ceiling(BigInteger.Log(number, 255));
+            else if (number < 0)
+            {
+                return new byte[size];
+            }
 
+            byte[] buffer = new byte[size];
             for (int i = 0; i < size; i++)
             {
-                byteArr[i] = (byte)(tempNumber % 255);
-                tempNumber /= 255;
+                buffer[i] = (byte)(number % 255);
+                number /= 255;
             }
+
+            return buffer;
         }
         ///<summary>Stores the buffer and stores its conversion to BigInteger.</summary>
-        public Base255(byte[] buffer)
+        public static BigInteger ToBigInt(byte[] buffer)
         {
-            this.byteArr = new byte[buffer.Length];
-            buffer.CopyTo(byteArr, 0);
-            Number = 0;
-
-            for (int i = 0; i < this.byteArr.Length; i++)
+            if (buffer is null)
             {
-                Number += this.byteArr[i] * BigInteger.Pow(255, i);
+                throw new ArgumentNullException(nameof(buffer));
             }
+
+            if (buffer.Length == 0)
+            {
+                return 0;
+            }
+            BigInteger number = 0;
+            for (int i = 0; i < buffer.Length; i++)
+            {
+                number += buffer[i] * BigInteger.Pow(255, i);
+            }
+            return number;
         }
 
-        public override string ToString()
-        {
-            return Number.ToString();
-        }
     }
 }

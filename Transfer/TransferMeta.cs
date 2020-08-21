@@ -1,5 +1,6 @@
 using System;
 using System.Net.Sockets;
+using System.Numerics;
 using System.Text;
 
 namespace FtLib
@@ -58,11 +59,11 @@ namespace FtLib
 
             // Parse
             logger.Log($"Got size buffer [{string.Join(",", sizeBuffer)}]", Logger.State.Debug);
-            Base255 size = new Base255(sizeBuffer);
-            logger.Log("Parsed as " + size.Number, Logger.State.Debug);
+            BigInteger number = Base255.ToBigInt(sizeBuffer);
+            logger.Log("Parsed as " + number, Logger.State.Debug);
             string name = System.Text.Encoding.UTF8.GetString(nameBuffer);
 
-            return new Meta(name, size.Number);
+            return new Meta(name, number);
         }
         /// <summary> 
         /// Sends meta file structure to host via client. Check netconf.json for meta structure.
@@ -85,11 +86,11 @@ namespace FtLib
             Encoding.UTF8.GetBytes(filename).CopyTo(metaBuffer, 0);
 
             // Copy the converted size to meta buffer.
-            Base255 size = new Base255(meta.Size);
-            logger.Log($"Compressing {meta.Size} into [{string.Join(",", size.byteArr)}]", Logger.State.Debug);
-            for (int i = 0; i < size.byteArr.Length; i++)
+            byte[] byteArr = Base255.ToByteArr(meta.Size);
+            logger.Log($"Compressing {meta.Size} into [{string.Join(",", byteArr)}]", Logger.State.Debug);
+            for (int i = 0; i < byteArr.Length; i++)
             {
-                metaBuffer[(NameBufferSize) + i] = size.byteArr[i];
+                metaBuffer[(NameBufferSize) + i] = byteArr[i];
             }
             logger.Log($"Sending meta buffer - [{string.Join(",", metaBuffer)}]", Logger.State.Debug);
 
