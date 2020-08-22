@@ -26,6 +26,10 @@ namespace FtLib
         {
             // Get 
             byte[] metaBuffer = new byte[MetaBufferSize];
+
+            int clientBufferSize = client.ReceiveBufferSize;
+            client.ReceiveBufferSize = metaBuffer.Length;
+
             int bytes = client.Receive(metaBuffer);
 
             // Probably disconnected.
@@ -63,6 +67,8 @@ namespace FtLib
             logger.Log("Parsed as " + number, LoggerState.Debug);
             string name = System.Text.Encoding.UTF8.GetString(nameBuffer);
 
+            client.ReceiveBufferSize = clientBufferSize;
+
             return new Meta(name, number);
         }
         /// <summary> 
@@ -74,6 +80,9 @@ namespace FtLib
         public static void SendMeta(Socket client, Meta meta)
         {
             byte[] metaBuffer = new byte[MetaBufferSize];
+
+            int clientBufferSize = client.ReceiveBufferSize;
+            client.SendBufferSize = metaBuffer.Length;
 
             // Cap filename to NameBufferSize
             string filename = meta.Name;
@@ -102,6 +111,7 @@ namespace FtLib
             {
                 throw new SocketException((int)SocketError.NotConnected);
             }
+            client.SendBufferSize = clientBufferSize;
         }
         #endregion
     }

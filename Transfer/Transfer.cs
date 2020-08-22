@@ -31,6 +31,8 @@ namespace FtLib
                 LoggerState.Debug | LoggerState.Simple);
 
             byte[] buffer = new byte[FileBufferSize];
+            int clientGetBuffer = client.ReceiveBufferSize;
+            client.ReceiveBufferSize = FileBufferSize;
 
             for (BigInteger received = 0; received != meta.Size;)
             {
@@ -43,6 +45,9 @@ namespace FtLib
             }
             logger.Log($"\r{meta.Name} - {meta.Size} / {meta.Size}",
                        LoggerState.Progress);
+
+            client.ReceiveBufferSize = clientGetBuffer;
+
             return meta;
         }
         ///<summary>
@@ -56,6 +61,8 @@ namespace FtLib
                 LoggerState.Debug | LoggerState.Simple);
 
             SendMeta(client, meta);
+            int clientSendBuffer = client.ReceiveBufferSize;
+            client.SendBufferSize = FileBufferSize;
 
             byte[] buffer = new byte[FileBufferSize];
 
@@ -71,6 +78,7 @@ namespace FtLib
             }
             logger.Log($"\r{meta.Name} - {meta.Size} / {meta.Size}",
                        LoggerState.Progress);
+            client.SendBufferSize = clientSendBuffer;
         }
         #region HelperMethods
         ///<summary>

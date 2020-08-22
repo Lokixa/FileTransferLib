@@ -16,6 +16,8 @@ namespace FtLib
 
             AesGcm gcm = new AesGcm(encryptionKey);
             byte[] buffer = new byte[FileBufferSize + TagBufferSize];
+            int clientGetBuffer = client.SendBufferSize;
+            client.ReceiveBufferSize = FileBufferSize + TagBufferSize;
 
             BigInteger count = 0;
             for (BigInteger i = 0; meta.Size != count; i++)
@@ -33,6 +35,7 @@ namespace FtLib
 
                 toWriteTo.Write(plainText, 0, plainText.Length);
             }
+            client.ReceiveBufferSize = clientGetBuffer;
             return meta;
         }
         public static void SendSecure(Socket client, Meta meta, Stream data, byte[] encryptionKey)
@@ -41,12 +44,15 @@ namespace FtLib
 
             AesGcm gcm = new AesGcm(encryptionKey);
             byte[] buffer = new byte[FileBufferSize];
+            int clientSendBuffer = client.SendBufferSize;
+            client.SendBufferSize = FileBufferSize + TagBufferSize;
 
             BigInteger count = 0;
             for (BigInteger i = 0; count != meta.Size; i++)
             {
                 int bytes = data.Read(buffer, 0, buffer.Length);
                 count += bytes;
+                logger.Log($"[{i}] Count: {count}", LoggerState.Debug);
                 if (bytes != buffer.Length)
                 {
                     Array.Resize(ref buffer, bytes);
@@ -58,6 +64,9 @@ namespace FtLib
                 byte[] nonce = Base255.ToByteArr(i, NonceBufferSize);
 
                 gcm.Encrypt(nonce, buffer, cyphertext, tag);
+                logger.Log($"Cypher: {string.Join(',', cyphertext)}", LoggerState.Debug);
+                logger.Log($"Tag: {string.Join(',', tag)}", LoggerState.Debug);
+                logger.Log($"Nonce: {string.Join(',', nonce)}", LoggerState.Debug);
 
                 byte[] unifiedEnc = new byte[cyphertext.Length + tag.Length];
                 cyphertext.CopyTo(unifiedEnc, 0);
@@ -65,6 +74,7 @@ namespace FtLib
 
                 client.Send(unifiedEnc, unifiedEnc.Length, SocketFlags.None);
             }
+            client.SendBufferSize = clientSendBuffer;
         }
     }
 }
